@@ -1,10 +1,10 @@
 const { name } = require('ejs');
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
+const kategoriSchema = new mongoose.Schema({
     name: String,
-    katergori: String,
+    kategori: String,
 });
 
-const Kategori = mongoose.model('Kategori', userSchema);
+const Kategori = mongoose.model('Kategori', kategoriSchema);
 module.exports = Kategori;

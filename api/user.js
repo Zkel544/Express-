@@ -1,11 +1,12 @@
-const express = require("express");
-const User = require("../modules/user");
-const bcrypt = require("bcrypt");
-const router = express.Router();
-const jwt = require("jsonwebtoken");
+const express           = require("express");
+const User              = require("../modules/user");
+const bcrypt            = require("bcrypt");
+const router            = express.Router();
+const jwt               = require("jsonwebtoken");
+const BlacklistedToken  = require("../modules/BlacklistedToken");
+const authenticateToken = require('../middleware/auth');
 require("dotenv").config();
 router.use(express.json());
-
 //signup
 router.post("/signup", async (req, res) => {
   let { username, email, password } = req.body;
@@ -72,7 +73,7 @@ router.post("/login", async (req, res) => {
     const accessToken = jwt.sign(
       { id: data[0]._id, email: data[0].email },
       process.env.JWT_SECRET || "secretkey",
-      { expiresIn: "15m" }
+      { expiresIn: "1d" }
     );
     const refreshToken = jwt.sign(
       { id: data[0]._id, email: data[0].email },
@@ -81,7 +82,7 @@ router.post("/login", async (req, res) => {
     );
     await User.updateOne(
       { _id: data[0]._id },
-      { $set: { refreshToken: refreshToken } }
+      { $set: { refreshToken: refreshToken  } }
     );
     return res
       .status(200)
@@ -92,33 +93,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-function authenticateToken(req, res, next) { 
-  const authHeader = req.headers["authorization"];
-  console.log("Authorization header received:", authHeader);
-
-  if (!authHeader) {
-    console.log("No Authorization header found");
-    return res.sendStatus(401); // Unauthorized
-  }
-
-  const parts = authHeader.split(" ");
-  if (parts.length !== 2 || parts[0] !== "Bearer") {
-    console.log("Authorization header format is invalid");
-    return res.sendStatus(401); // Unauthorized
-  }
-
-  const token = parts[1];
-  console.log("Token extracted:", token);
-
-  jwt.verify(token, process.env.JWT_SECRET || "secretkey", (err, user) => {
-    if (err) {
-      console.error("JWT verify error:", err);
-      return res.sendStatus(403); // Forbidden
-    }
-    req.user = user; 
-    next();
-  });
-}
 
 router.get("/profile", authenticateToken, async (req, res) => {
   try {
@@ -136,6 +110,15 @@ router.get("/profile", authenticateToken, async (req, res) => {
 // Logout 
 router.post("/logout", authenticateToken, async (req, res) => {
   try {
+    const token = req.headers["authorization"].split(" ")[1];
+
+
+    const decoded = jwt.decode(token);
+    await BlacklistedToken.create({
+      token,
+      expiredAt: new Date(decoded.exp * 1000),
+    });
+
     await User.updateOne(
       { _id: req.user.id },
       { $unset: { refreshToken: "" } }

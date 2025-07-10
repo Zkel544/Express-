@@ -1,18 +1,19 @@
 require('./config/db');
+require('dotenv').config();
 
-const express = require('express');
-const app = express();
-const port = 3000;
+const express    = require('express');
+const app        = express();
+const port       = process.env.PORT || 3000;
 const bodyParser = require('body-parser').json;
-const userRoutes = require('./api/user');
-const kategoriRoutes = require('./api/kategori');
-const cors = require('cors');
+const cors       = require('cors');
+
 app.use(bodyParser());
 app.use(cors());
 
-app.use('/user', userRoutes);
-app.use('/kategori', kategoriRoutes);
-app.use('/video', require('./api/video'));
+const routes = require('./routes');
+app.use('/', routes);
+
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
