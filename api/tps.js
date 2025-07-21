@@ -68,5 +68,21 @@ router.post('/update/:id', async (req, res) => {
     }
 });
 
+router.post('/delete/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const deletedTps = await Tps.findByIdAndDelete(id);
+
+        if (!deletedTps) {
+            return res.status(404).json({ message: "TPS tidak ditemukan" });
+        }
+
+        res.status(200).json({ message: "TPS berhasil dihapus" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Terjadi kesalahan saat menghapus TPS" });
+    }
+});
+
 module.exports = router;
 
