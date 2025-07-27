@@ -1,10 +1,10 @@
-const express           = require("express");
-const User              = require("../modules/user");
-const bcrypt            = require("bcrypt");
-const router            = express.Router();
-const jwt               = require("jsonwebtoken");
-const BlacklistedToken  = require("../modules/BlacklistedToken");
-const authenticateToken = require('../middleware/auth');
+const express = require("express");
+const User = require("../modules/user");
+const bcrypt = require("bcrypt");
+const router = express.Router();
+const jwt = require("jsonwebtoken");
+const BlacklistedToken = require("../modules/BlacklistedToken");
+const authenticateToken = require("../middleware/auth");
 require("dotenv").config();
 router.use(express.json());
 //signup
@@ -82,17 +82,21 @@ router.post("/login", async (req, res) => {
     );
     await User.updateOne(
       { _id: data[0]._id },
-      { $set: { refreshToken: refreshToken  } }
+      { $set: { refreshToken: refreshToken } }
     );
     return res
       .status(200)
-      .json({ message: "Login berhasil", user: data[0], accessToken, refreshToken });
+      .json({
+        message: "Login berhasil",
+        user: data[0],
+        accessToken,
+        refreshToken,
+      });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Terjadi kesalahan saat login" });
   }
 });
-
 
 router.get("/profile", authenticateToken, async (req, res) => {
   try {
@@ -103,15 +107,16 @@ router.get("/profile", authenticateToken, async (req, res) => {
     res.json({ user });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Terjadi kesalahan saat mengambil profil" });
+    res
+      .status(500)
+      .json({ message: "Terjadi kesalahan saat mengambil profil" });
   }
 });
 
-// Logout 
+// Logout
 router.post("/logout", authenticateToken, async (req, res) => {
   try {
     const token = req.headers["authorization"].split(" ")[1];
-
 
     const decoded = jwt.decode(token);
     await BlacklistedToken.create({
@@ -153,7 +158,9 @@ router.post("/update", authenticateToken, async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Terjadi kesalahan saat memperbarui profil" });
+    res
+      .status(500)
+      .json({ message: "Terjadi kesalahan saat memperbarui profil" });
   }
 });
 router.post("/update-password", authenticateToken, async (req, res) => {
@@ -181,7 +188,9 @@ router.post("/update-password", authenticateToken, async (req, res) => {
     res.status(200).json({ message: "Password berhasil diperbarui" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Terjadi kesalahan saat memperbarui password" });
+    res
+      .status(500)
+      .json({ message: "Terjadi kesalahan saat memperbarui password" });
   }
 });
 
