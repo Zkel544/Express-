@@ -8,4 +8,5 @@ const sampahSchema = new mongoose.Schema({
     deskripsi: String,
 });
 
+
 module.exports = mongoose.model('sampah',sampahSchema)
