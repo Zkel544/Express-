@@ -16,15 +16,14 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/add', async (req, res) => {
-  let { name, kategori } = req.body;
+  let { name, } = req.body;
   name = name?.trim();
-  kategori = kategori?.trim();
 
-  if (!name || !kategori) {
+  if (!name ) {
     return res.status(400).json({ message: "Isi semua formulir" });
   }
 
-  const newKategori = new Kategori({ name, kategori });
+  const newKategori = new Kategori({ name });
 
   try {
     await newKategori.save();
@@ -37,18 +36,17 @@ router.post('/add', async (req, res) => {
 
 router.post('/update/:id', async (req, res) => {
   const { id } = req.params;
-  let { name, kategori } = req.body;
+  let { name } = req.body;
   name = name?.trim();
-  kategori = kategori?.trim();
 
-  if (!name || !kategori) {
+  if (!name) {
     return res.status(400).json({ message: "Isi semua formulir" });
   }
 
   try {
     const updatedKategori = await Kategori.findByIdAndUpdate(
       id,
-      { name, kategori },
+      { name },
       { new: true }
     );
 
