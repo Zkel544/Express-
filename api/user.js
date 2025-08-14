@@ -31,7 +31,7 @@ router.get("/", async (req, res) => {
 });
 
 
-router.post("/update", authenticateToken, async (req, res) => {
+router.post("/update/:id", authenticateToken, async (req, res) => {
   const { username, email, oldPassword, newPassword } = req.body;
 
   if (!username || !email) {
@@ -39,11 +39,13 @@ router.post("/update", authenticateToken, async (req, res) => {
   }
 
   try {
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
 
     user.username = username;
-    user.email = email;
+    user.email    = email;
 
     if (oldPassword && newPassword) {
       const isMatch = await bcrypt.compare(oldPassword, user.password);
@@ -54,19 +56,20 @@ router.post("/update", authenticateToken, async (req, res) => {
     }
 
     await user.save();
-
-    const safeUser = {
-      _id: user._id,
-      username: user.username,
-      email: user.email
-    };
-
-    res.status(200).json({ message: "Profil berhasil diperbarui", user: safeUser });
+    res.status(200).json({
+      message: "Profil berhasil diperbarui",
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email
+      }
+    });
   } catch (err) {
     console.error("POST /update error:", err);
     res.status(500).json({ message: "Terjadi kesalahan saat memperbarui profil" });
   }
 });
+
 
 router.post("/delete", authenticateToken, async (req, res) => {
   try {
