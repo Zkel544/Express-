@@ -71,13 +71,17 @@ router.post("/update/:id", authenticateToken, async (req, res) => {
 });
 
 
-router.post("/delete", authenticateToken, async (req, res) => {
+router.delete("/delete/:id", authenticateToken, async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.user.id);
-    if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User tidak ditemukan" });
+    }
+
     res.status(200).json({ message: "Akun berhasil dihapus" });
   } catch (err) {
-    console.error("POST /delete error:", err);
+    console.error("DELETE /delete/:id error:", err);
     res.status(500).json({ message: "Terjadi kesalahan saat menghapus akun" });
   }
 });
