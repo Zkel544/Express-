@@ -1,10 +1,12 @@
-const router = require("express").Router();
 const express = require("express");
-const Sampah = require("../modules/sampah");
 const cors = require("cors");
+const Sampah = require("../modules/sampah");
+
+const router = express.Router();
 router.use(cors());
 router.use(express.json());
 
+// GET semua sampah
 router.get("/", async (req, res) => {
   try {
     const sampahList = await Sampah.find().populate("kategori");
@@ -15,46 +17,43 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Tambah sampah
 router.post("/add", async (req, res) => {
-  const { name, kategori, satuan, harga, deskripsi } = req.body;
+  const { name, kategori, satuan = "kg", harga = 0, deskripsi = "-" } = req.body;
 
-  if (!name || !kategori) {
+  if (!name?.trim() || !kategori) {
     return res.status(400).json({ message: "Isi formulir wajib" });
   }
 
-  const newSampah = new Sampah({
-    name,
-    kategori,
-    satuan,
-    harga,
-    deskripsi,
-  });
-  if (!newSampah.satuan) newSampah.satuan = "kg";
-  if (!newSampah.harga) newSampah.harga = 0;
-  if (!newSampah.deskripsi) newSampah.deskripsi = "-";
   try {
-    await newSampah.save();
+    await new Sampah({
+      name: name.trim(),
+      kategori,
+      satuan,
+      harga,
+      deskripsi
+    }).save();
+
     res.status(201).json({ message: "Sampah berhasil ditambahkan" });
   } catch (err) {
-    console.error(err);
-    res
-      .status(500)
-      .json({ message: "Terjadi kesalahan saat menambahkan sampah" });
+    console.error("POST /sampah/add error:", err);
+    res.status(500).json({ message: "Terjadi kesalahan saat menambahkan sampah" });
   }
 });
 
+// Update sampah
 router.post("/update/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, kategori, satuan, harga, deskripsi } = req.body;
+  const { name, kategori, satuan = "kg", harga = 0, deskripsi = "-" } = req.body;
 
-  if (!name || !kategori) {
+  if (!name?.trim() || !kategori) {
     return res.status(400).json({ message: "Isi formulir wajib" });
   }
 
   try {
     const updatedSampah = await Sampah.findByIdAndUpdate(
       id,
-      { name, kategori, satuan, harga, deskripsi },
+      { name: name.trim(), kategori, satuan, harga, deskripsi },
       { new: true }
     );
 
@@ -64,16 +63,15 @@ router.post("/update/:id", async (req, res) => {
 
     res.status(200).json({
       message: "Sampah berhasil diperbarui",
-      sampah: updatedSampah,
+      data: updatedSampah
     });
   } catch (err) {
-    console.error(err);
-    res
-      .status(500)
-      .json({ message: "Terjadi kesalahan saat memperbarui sampah" });
+    console.error("POST /sampah/update/:id error:", err);
+    res.status(500).json({ message: "Terjadi kesalahan saat memperbarui sampah" });
   }
 });
 
+// Hapus sampah
 router.post("/delete/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -86,10 +84,8 @@ router.post("/delete/:id", async (req, res) => {
 
     res.status(200).json({ message: "Sampah berhasil dihapus" });
   } catch (err) {
-    console.error(err);
-    res
-      .status(500)
-      .json({ message: "Terjadi kesalahan saat menghapus sampah" });
+    console.error("POST /sampah/delete/:id error:", err);
+    res.status(500).json({ message: "Terjadi kesalahan saat menghapus sampah" });
   }
 });
 

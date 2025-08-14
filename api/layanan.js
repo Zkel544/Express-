@@ -1,85 +1,95 @@
-const layanan = require('../modules/layanan');
-const express = require('express');
+const express = require("express");
+const cors = require("cors");
+const Layanan = require("../modules/layanan");
+
 const router = express.Router();
-const cors = require('cors');
 router.use(express.json());
 router.use(cors());
 
-router.get('/', async (req, res) => {
+const validateLayanan = ({ phone, region, type, status }, requireStatus = true) => {
+  if (!phone?.trim() || !region?.trim() || !type?.trim()) return "Isi semua formulir";
+  if (requireStatus && !status?.trim()) return "Isi semua formulir";
+  return null;
+};
+
+// Get semua layanan
+router.get("/", async (req, res) => {
   try {
-    const layananList = await layanan.find().populate('user');
+    const layananList = await Layanan.find().populate("user");
     res.status(200).json(layananList);
   } catch (err) {
-    console.error('GET /layanan error:', err);
-    res.status(500).json({ message: 'Gagal mengambil data layanan' });
+    console.error("GET /layanan error:", err);
+    res.status(500).json({ message: "Gagal mengambil data layanan" });
   }
 });
 
-router.post('/add', async (req, res) => {
-    const { phone, region, note, type, status } = req.body;
-    
-    if (!phone || !region || !type || !status) {
-        return res.status(400).json({ message: 'Isi semua formulir' });
-    }
-    
-    const newLayanan = new layanan({
-        phone,
-        region,
-        note: note || '-',
-        type,
-        status,
-    });
-    
-    try {
-        await newLayanan.save();
-        res.status(201).json({ message: 'Layanan berhasil ditambahkan' });
-    } catch (err) {
-        console.error('POST /layanan/add error:', err);
-        res.status(500).json({ message: 'Terjadi kesalahan saat menambahkan layanan' });
-    }
-}); 
+// Tambah layanan
+router.post("/add", async (req, res) => {
+  const error = validateLayanan(req.body);
+  if (error) return res.status(400).json({ message: error });
 
-router.post('/update/:id', async (req, res) => {
-    const { id } = req.params;
-    const { phone, region, note, type, status } = req.body;
+  try {
+    await new Layanan({
+      phone: req.body.phone.trim(),
+      region: req.body.region.trim(),
+      note: req.body.note?.trim() || "-",
+      type: req.body.type.trim(),
+      status: req.body.status.trim()
+    }).save();
 
-    if (!phone || !region || !type) {
-        return res.status(400).json({ message: 'Isi semua formulir' });
-    }
-
-    try {
-        const updatedLayanan = await layanan.findByIdAndUpdate(
-            id,
-            { phone, region, note, type, status },
-            { new: true }
-        );
-
-        if (!updatedLayanan) {
-            return res.status(404).json({ message: 'Layanan tidak ditemukan' });
-        }
-
-        res.status(200).json(updatedLayanan);
-    } catch (err) {
-        console.error('POST /layanan/update/:id error:', err);
-        res.status(500).json({ message: 'Terjadi kesalahan saat memperbarui layanan' });
-    }
+    res.status(201).json({ message: "Layanan berhasil ditambahkan" });
+  } catch (err) {
+    console.error("POST /layanan/add error:", err);
+    res.status(500).json({ message: "Terjadi kesalahan saat menambahkan layanan" });
+  }
 });
 
-router.delete('/delete/:id', async (req, res) => {
-    const { id } = req.params;
+// Update layanan
+router.post("/update/:id", async (req, res) => {
+  const error = validateLayanan(req.body, false);
+  if (error) return res.status(400).json({ message: error });
 
-    try {
-        const deletedLayanan = await layanan.findByIdAndDelete(id);
+  try {
+    const updatedLayanan = await Layanan.findByIdAndUpdate(
+      req.params.id,
+      {
+        phone: req.body.phone.trim(),
+        region: req.body.region.trim(),
+        note: req.body.note?.trim() || "-",
+        type: req.body.type.trim(),
+        status: req.body.status?.trim()
+      },
+      { new: true }
+    );
 
-        if (!deletedLayanan) {
-            return res.status(404).json({ message: 'Layanan tidak ditemukan' });
-        }
-
-        res.status(200).json({ message: 'Layanan berhasil dihapus' });
-    } catch (err) {
-        console.error('DELETE /layanan/delete/:id error:', err);
-        res.status(500).json({ message: 'Terjadi kesalahan saat menghapus layanan' });
+    if (!updatedLayanan) {
+      return res.status(404).json({ message: "Layanan tidak ditemukan" });
     }
+
+    res.status(200).json({
+      message: "Layanan berhasil diperbarui",
+      data: updatedLayanan
+    });
+  } catch (err) {
+    console.error("POST /layanan/update/:id error:", err);
+    res.status(500).json({ message: "Terjadi kesalahan saat memperbarui layanan" });
+  }
+});
+
+// Hapus layanan
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    const deletedLayanan = await Layanan.findByIdAndDelete(req.params.id);
+
+    if (!deletedLayanan) {
+      return res.status(404).json({ message: "Layanan tidak ditemukan" });
+    }
+
+    res.status(200).json({ message: "Layanan berhasil dihapus" });
+  } catch (err) {
+    console.error("DELETE /layanan/delete/:id error:", err);
+    res.status(500).json({ message: "Terjadi kesalahan saat menghapus layanan" });
+  }
 });
 
 module.exports = router;
