@@ -27,12 +27,14 @@ function validateLogin({ email, password }) {
 
 // Signup
 router.post("/signup", async (req, res) => {
-  let { username, email, password } = req.body;
+  let { username, email, password,phone,level } = req.body;
   username = username?.trim();
   email = email?.trim();
   password = password?.trim();
+  phone = phone?.trim();
+  level = level?.trim() || 'user';
 
-  const errors = validateSignup({ username, email, password });
+  const errors = validateSignup({ username, email, password,phone,level });
   if (errors.length) return res.status(400).json({ message: errors[0] });
 
   try {
