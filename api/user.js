@@ -30,6 +30,42 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.post("/add", async (req, res) => {
+  try {
+    const { username, email, password, phone, address, level } = req.body;
+
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Username, email, dan password wajib diisi" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email sudah terdaftar" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+      phone,
+      address,
+      level: level || "user", 
+    });
+
+    await newUser.save();
+    const { password: _, ...userData } = newUser.toObject();
+
+    res.status(201).json({
+      message: "User berhasil ditambahkan",
+      user: userData,
+    });
+  } catch (err) {
+    console.error("POST /add error:", err);
+    res.status(500).json({ message: "Gagal menambahkan user" });
+  }
+});
+
 
 router.post("/update/:id", authenticateToken, async (req, res) => {
   const { username, email, oldPassword, newPassword } = req.body;
