@@ -68,7 +68,7 @@ router.post("/add", async (req, res) => {
 
 
 router.post("/update/:id", authenticateToken, async (req, res) => {
-  const { username, email, oldPassword, newPassword } = req.body;
+  const { username, email, password, phone, address, level } = req.body;
 
   if (!username || !email) {
     return res.status(400).json({ message: "Isi semua formulir wajib" });
@@ -82,30 +82,31 @@ router.post("/update/:id", authenticateToken, async (req, res) => {
 
     user.username = username;
     user.email    = email;
-
-    if (oldPassword && newPassword) {
-      const isMatch = await bcrypt.compare(oldPassword, user.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: "Password lama salah" });
-      }
-      user.password = await bcrypt.hash(newPassword, 10);
+    user.phone    = phone || user.phone;
+    user.address  = address || user.address;
+    user.level    = level || user.level;
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
     }
 
     await user.save();
+
     res.status(200).json({
-      message: "Profil berhasil diperbarui",
+      message: "User berhasil diperbarui",
       user: {
         _id: user._id,
         username: user.username,
-        email: user.email
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        level: user.level
       }
     });
   } catch (err) {
     console.error("POST /update error:", err);
-    res.status(500).json({ message: "Terjadi kesalahan saat memperbarui profil" });
+    res.status(500).json({ message: "Terjadi kesalahan saat memperbarui user" });
   }
 });
-
 
 router.delete("/delete/:id", authenticateToken, async (req, res) => {
   try {
