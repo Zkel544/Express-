@@ -6,7 +6,7 @@ const router = express.Router();
 router.use(express.json());
 router.use(cors());
 
-const validateLayanan = ({ phone, region, type, status }, requireStatus = true) => {
+const validateLayanan = ({ name, phone, region, type, status }, requireStatus = true) => {
   if (!phone?.trim() || !region?.trim() || !type?.trim()) return "Isi semua formulir";
   if (requireStatus && !status?.trim()) return "Isi semua formulir";
   return null;
@@ -30,6 +30,7 @@ router.post("/add", async (req, res) => {
 
   try {
     await new Layanan({
+      name: req.body.name.trim(),
       phone: req.body.phone.trim(),
       region: req.body.region.trim(),
       note: req.body.note?.trim() || "-",
@@ -53,6 +54,7 @@ router.post("/update/:id", async (req, res) => {
     const updatedLayanan = await Layanan.findByIdAndUpdate(
       req.params.id,
       {
+        name: req.body.name.trim(),
         phone: req.body.phone.trim(),
         region: req.body.region.trim(),
         note: req.body.note?.trim() || "-",

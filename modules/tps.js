@@ -6,6 +6,7 @@ const kategoriSchema = new mongoose.Schema({
     latitude: Number,
     longitude: Number,
     kapasitas: Number,
+    unit_kerja: String,
 });
 
 const Tps = mongoose.model('Tps', kategoriSchema);

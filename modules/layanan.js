@@ -1,6 +1,8 @@
+const { name } = require('ejs');
 const mongoose = require('mongoose');
 
 const layananSchema = new mongoose.Schema({
+    name: String,    
     phone: String,
     region: String,
     note: String,
