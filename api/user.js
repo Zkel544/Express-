@@ -30,9 +30,45 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.post("/add", async (req, res) => {
+  try {
+    const { username, email, password, phone, address, level } = req.body;
+
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Username, email, dan password wajib diisi" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email sudah terdaftar" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+      phone,
+      address,
+      level: level || "user", 
+    });
+
+    await newUser.save();
+    const { password: _, ...userData } = newUser.toObject();
+
+    res.status(201).json({
+      message: "User berhasil ditambahkan",
+      user: userData,
+    });
+  } catch (err) {
+    console.error("POST /add error:", err);
+    res.status(500).json({ message: "Gagal menambahkan user" });
+  }
+});
+
 
 router.post("/update/:id", authenticateToken, async (req, res) => {
-  const { username, email, oldPassword, newPassword } = req.body;
+  const { username, email, password, phone, address, level } = req.body;
 
   if (!username || !email) {
     return res.status(400).json({ message: "Isi semua formulir wajib" });
@@ -46,30 +82,31 @@ router.post("/update/:id", authenticateToken, async (req, res) => {
 
     user.username = username;
     user.email    = email;
-
-    if (oldPassword && newPassword) {
-      const isMatch = await bcrypt.compare(oldPassword, user.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: "Password lama salah" });
-      }
-      user.password = await bcrypt.hash(newPassword, 10);
+    user.phone    = phone || user.phone;
+    user.address  = address || user.address;
+    user.level    = level || user.level;
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
     }
 
     await user.save();
+
     res.status(200).json({
-      message: "Profil berhasil diperbarui",
+      message: "User berhasil diperbarui",
       user: {
         _id: user._id,
         username: user.username,
-        email: user.email
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        level: user.level
       }
     });
   } catch (err) {
     console.error("POST /update error:", err);
-    res.status(500).json({ message: "Terjadi kesalahan saat memperbarui profil" });
+    res.status(500).json({ message: "Terjadi kesalahan saat memperbarui user" });
   }
 });
-
 
 router.delete("/delete/:id", authenticateToken, async (req, res) => {
   try {
