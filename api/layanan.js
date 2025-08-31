@@ -15,7 +15,7 @@ const validateLayanan = ({ name, phone, region, type, status }, requireStatus = 
 // Get semua layanan
 router.get("/", async (req, res) => {
   try {
-    const layananList = await Layanan.find().populate("user");
+    const layananList = await Layanan.find();
     res.status(200).json(layananList);
   } catch (err) {
     console.error("GET /layanan error:", err);
