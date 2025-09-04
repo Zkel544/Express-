@@ -82,7 +82,7 @@ router.post("/login", async (req, res) => {
 
     res.status(200).json({
       message: "Login berhasil",
-      user: { _id: user._id, username: user.username, email: user.email },
+      user: { _id: user._id, username: user.username, email: user.email, level: user.level },
       accessToken,
       refreshToken
     });
