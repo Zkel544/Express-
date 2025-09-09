@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
 
 // Tambah service
 router.post("/add", async (req, res) => {
-  const { user, name, deskripsi = "-", status } = req.body;
+  const { user, name, deskripsi = "-", status,tps } = req.body;
 
   if (!user || !name?.trim() || !status) {
     return res.status(400).json({ message: "Isi semua formulir" });
@@ -30,7 +30,8 @@ router.post("/add", async (req, res) => {
       user,
       name: name.trim(),
       deskripsi,
-      status
+      status,
+      tps
     }).save();
 
     res.status(201).json({ message: "Layanan berhasil ditambahkan" });
@@ -43,7 +44,7 @@ router.post("/add", async (req, res) => {
 // Update service
 router.post("/update/:id", async (req, res) => {
   const { id } = req.params;
-  const { user, name, deskripsi = "-", status } = req.body;
+  const { user, name, deskripsi = "-", status,tps } = req.body;
 
   if (!user || !name?.trim() || !status) {
     return res.status(400).json({ message: "Isi semua formulir" });
@@ -52,7 +53,7 @@ router.post("/update/:id", async (req, res) => {
   try {
     const updatedService = await Service.findByIdAndUpdate(
       id,
-      { user, name: name.trim(), deskripsi, status },
+      { user, name: name.trim(), deskripsi, status, tps },
       { new: true }
     );
 

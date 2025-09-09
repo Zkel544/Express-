@@ -5,6 +5,7 @@ const serviceschema = new mongoose.Schema({
     name: String,
     deskripsi: String,
     status: String,
+    tps:{type:mongoose.Schema.Types.ObjectId, ref: 'Tps'},
 });
 
 const Service = mongoose.model('Service', serviceschema);
