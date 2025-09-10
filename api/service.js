@@ -9,7 +9,7 @@ router.use(cors());
 // GET semua service
 router.get("/", async (req, res) => {
   try {
-    const services = await Service.find().populate("user");
+    const services = await Service.find().populate("user", "tps");
     res.status(200).json(services);
   } catch (err) {
     console.error("GET /service error:", err);
