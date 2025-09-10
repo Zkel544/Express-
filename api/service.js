@@ -19,6 +19,25 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/user/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const services = await Service.find({ user: userId })
+      .populate("user")
+      .populate("tps");
+
+    if (!services || services.length === 0) {
+      return res.status(404).json({ message: "Tidak ada layanan untuk user ini" });
+    }
+
+    res.status(200).json(services);
+  } catch (err) {
+    console.error("GET /service/user/:userId error:", err);
+    res.status(500).json({ message: "Gagal mengambil data layanan user" });
+  }
+});
+
 // Tambah service
 router.post("/add", async (req, res) => {
   const { user, name, deskripsi = "-", status,tps } = req.body;
