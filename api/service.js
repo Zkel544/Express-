@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
 
 // Tambah service
 router.post("/add", async (req, res) => {
-  const { user, name, deskripsi = "-", status,tps } = req.body;
+  const { user, name, deskripsi = "-", status,tps} = req.body;
 
   if (!user || !name?.trim() || !status) {
     return res.status(400).json({ message: "Isi semua formulir" });
@@ -31,7 +31,7 @@ router.post("/add", async (req, res) => {
       name: name.trim(),
       deskripsi,
       status,
-      tps
+      tps,
     }).save();
 
     res.status(201).json({ message: "Layanan berhasil ditambahkan" });
