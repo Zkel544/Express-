@@ -4,7 +4,7 @@ const router            = express.Router();
 
 router.use('/', require('../api/auth'));
 router.use('/user', require('../api/user'));
-router.use('/dashboard' ,require('../api/dashboard'));
+router.use('/dashboard',authenticateToken ,require('../api/dashboard'));
 router.use('/kategori',authenticateToken ,require('../api/kategori'));
 router.use('/video', authenticateToken , require('../api/video'));
 router.use('/tps', authenticateToken, require('../api/tps'));
