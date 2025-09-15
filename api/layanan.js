@@ -23,6 +23,26 @@ router.get("/", async (req, res) => {
   }
 });
 
+
+router.get("/user", async (req, res) => {
+  try {
+    const { type } = req.query; 
+
+    let filter = {};
+    if (type) {
+      filter.type = type.trim();
+    }
+
+    const layananList = await Layanan.find(filter);
+
+    res.status(200).json(layananList);
+  } catch (err) {
+    console.error("GET /layanan/user error:", err);
+    res.status(500).json({ message: "Gagal mengambil data layanan" });
+  }
+});
+
+
 // Tambah layanan
 router.post("/add", async (req, res) => {
   const error = validateLayanan(req.body);
