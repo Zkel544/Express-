@@ -9,11 +9,32 @@ router.use(cors());
 // GET semua service
 router.get("/", async (req, res) => {
   try {
-    const services = await Service.find().populate("user");
+      const services = await Service.find()
+      .populate("user")  
+      .populate("tps");
     res.status(200).json(services);
   } catch (err) {
     console.error("GET /service error:", err);
     res.status(500).json({ message: "Gagal mengambil data layanan" });
+  }
+});
+
+router.get("/user/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const services = await Service.find({ user: userId })
+      .populate("user")
+      .populate("tps");
+
+    if (!services || services.length === 0) {
+      return res.status(404).json({ message: "Tidak ada layanan untuk user ini" });
+    }
+
+    res.status(200).json(services);
+  } catch (err) {
+    console.error("GET /service/user/:userId error:", err);
+    res.status(500).json({ message: "Gagal mengambil data layanan user" });
   }
 });
 
