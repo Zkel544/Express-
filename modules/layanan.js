@@ -8,6 +8,7 @@ const layananSchema = new mongoose.Schema({
     note: String,
     type: String,
     status: String,
+    no: String,
 });
 
 const Layanan = mongoose.model('Layanan', layananSchema);
