@@ -55,7 +55,8 @@ router.post("/add", async (req, res) => {
       region: req.body.region.trim(),
       note: req.body.note?.trim() || "-",
       type: req.body.type.trim(),
-      status: req.body.status.trim()
+      status: req.body.status.trim(),
+      no: req.body.layanan?.trim() || "-"
     }).save();
 
     res.status(201).json({ message: "Layanan berhasil ditambahkan" });

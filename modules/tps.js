@@ -8,7 +8,7 @@ const kategoriSchema = new mongoose.Schema({
     kapasitas: Number,
     unit_kerja: String,
     no: String,
-    typed: String,
+    type: String,
 });
 
 const Tps = mongoose.model('Tps', kategoriSchema);
