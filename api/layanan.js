@@ -80,7 +80,8 @@ router.post("/update/:id", async (req, res) => {
         region: req.body.region.trim(),
         note: req.body.note?.trim() || "-",
         type: req.body.type.trim(),
-        status: req.body.status?.trim()
+        status: req.body.status?.trim(),
+        no: req.body.layanan?.trim() || "-"
       },
       { new: true }
     );
