@@ -6,92 +6,121 @@ const router = express.Router();
 router.use(express.json());
 router.use(cors());
 
-// Ambil semua TPS
-router.get("/", async (req, res) => {
+/* =====================================================
+   Helper
+===================================================== */
+const hitungStatusKapasitas = (maks, terpakai) => {
+  if (!maks || terpakai == null) return "aman";
+
+  const persen = (terpakai / maks) * 100;
+  if (persen >= 100) return "penuh";
+  if (persen >= 80) return "hampir_penuh";
+  return "aman";
+};
+
+/* =====================================================
+   GET - Ambil semua TPS
+===================================================== */
+router.get("/", async (_, res) => {
   try {
-    const tpsList = await Tps.find();
-    res.status(200).json(tpsList);
+    const data = await Tps.find();
+    return res.status(200).json(data);
   } catch (err) {
     console.error("GET /tps error:", err);
-    res.status(500).json({ message: "Gagal mengambil data TPS" });
+    return res.status(500).json({ message: "Gagal mengambil data TPS" });
   }
 });
 
-// Tambah TPS
+/* =====================================================
+   POST - Tambah TPS
+===================================================== */
 router.post("/add", async (req, res) => {
-  const { nama, alamat, latitude, longitude, kapasitas } = req.body;
-
-  if (![nama, alamat, latitude, longitude, kapasitas].every(Boolean)) {
-    return res.status(400).json({ message: "Isi semua formulir" });
-  }
-
   try {
-    await new Tps({
+    const {
+      nama,alamat,latitude,longitude,akses_jalan,kapasitas_maksimal,kapasitas_terpakai,
+      unit_kerja,no,type,fasilitas,jam_operasional,hari_operasional,jadwal_angkut,
+    } = req.body;
+
+    if (!nama || !alamat || latitude == null || longitude == null) {
+      return res.status(400).json({ message: "Data wajib belum lengkap" });
+    }
+
+    const tps = await Tps.create({
       nama: nama.trim(),
       alamat: alamat.trim(),
-      latitude,
-      longitude,
-      kapasitas
-    }).save();
+      latitude,longitude,akses_jalan,kapasitas_maksimal,kapasitas_terpakai,
+      status_kapasitas: hitungStatusKapasitas(
+        kapasitas_maksimal,
+        kapasitas_terpakai
+      ),
+      unit_kerja,no,type,fasilitas,jam_operasional,hari_operasional,jadwal_angkut,
+    });
 
-    res.status(201).json({ message: "TPS berhasil ditambahkan" });
-  } catch (err) {
-    console.error("POST /tps/add error:", err);
-    res.status(500).json({ message: "Terjadi kesalahan saat menambahkan TPS" });
-  }
-});
-
-// Update TPS
-router.post("/update/:id", async (req, res) => {
-  const { id } = req.params;
-  const { nama, alamat, latitude, longitude, kapasitas } = req.body;
-
-  if (![nama, alamat, latitude, longitude, kapasitas].every(Boolean)) {
-    return res.status(400).json({ message: "Isi semua formulir" });
-  }
-
-  try {
-    const updatedTps = await Tps.findByIdAndUpdate(
-      id,
-      {
-        nama: nama.trim(),
-        alamat: alamat.trim(),
-        latitude,
-        longitude,
-        kapasitas
-      },
-      { new: true }
-    );
-
-    if (!updatedTps) {
-      return res.status(404).json({ message: "TPS tidak ditemukan" });
-    }
-
-    res.status(200).json({
-      message: "TPS berhasil diperbarui",
-      data: updatedTps
+    return res.status(201).json({
+      message: "TPS berhasil ditambahkan",
+      data: tps,
     });
   } catch (err) {
-    console.error("POST /tps/update error:", err);
-    res.status(500).json({ message: "Terjadi kesalahan saat memperbarui TPS" });
+    console.error("POST /tps/add error:", err);
+    return res.status(500).json({ message: "Gagal menambahkan TPS" });
   }
 });
 
-// Hapus TPS
-router.delete("/delete/:id", async (req, res) => {
-  const { id } = req.params;
-
+/* =====================================================
+   PUT - Update TPS
+===================================================== */
+router.put("/update/:id", async (req, res) => {
   try {
-    const deletedTps = await Tps.findByIdAndDelete(id);
+    const { id } = req.params;
+    const payload = { ...req.body };
 
-    if (!deletedTps) {
+    if (payload.nama) payload.nama = payload.nama.trim();
+    if (payload.alamat) payload.alamat = payload.alamat.trim();
+
+    if (
+      payload.kapasitas_maksimal != null ||
+      payload.kapasitas_terpakai != null
+    ) {
+      payload.status_kapasitas = hitungStatusKapasitas(
+        payload.kapasitas_maksimal,
+        payload.kapasitas_terpakai
+      );
+    }
+
+    const updated = await Tps.findByIdAndUpdate(id, payload, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updated) {
       return res.status(404).json({ message: "TPS tidak ditemukan" });
     }
 
-    res.status(200).json({ message: "TPS berhasil dihapus" });
+    return res.status(200).json({
+      message: "TPS berhasil diperbarui",
+      data: updated,
+    });
+  } catch (err) {
+    console.error("PUT /tps/update error:", err);
+    return res.status(500).json({ message: "Gagal memperbarui TPS" });
+  }
+});
+
+/* =====================================================
+   DELETE - Hapus TPS
+===================================================== */
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    const deleted = await Tps.findByIdAndDelete(req.params.id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "TPS tidak ditemukan" });
+    }
+
+    return res.status(200).json({ message: "TPS berhasil dihapus" });
   } catch (err) {
     console.error("DELETE /tps/delete error:", err);
-    res.status(500).json({ message: "Terjadi kesalahan saat menghapus TPS" });
+    return res.status(500).json({ message: "Gagal menghapus TPS" });
   }
 });
 
