@@ -67,9 +67,9 @@ router.post("/add", async (req, res) => {
 });
 
 /* =====================================================
-   PUT - Update TPS
+   POST - Update TPS
 ===================================================== */
-router.put("/update/:id", async (req, res) => {
+router.post("/update/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const payload = { ...req.body };
