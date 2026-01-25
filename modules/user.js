@@ -11,7 +11,11 @@ const userSchema = new mongoose.Schema({
   },
   phone:Number,
   address:String,
-  refreshToken: String 
+  refreshToken: String,
+  totalPoint: {
+    type: Number,
+    default: 0
+  } 
 });
 
 const User = mongoose.model('User', userSchema);

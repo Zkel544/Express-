@@ -99,7 +99,7 @@ router.post("/update/:id", authenticateToken, async (req, res) => {
         email: user.email,
         phone: user.phone,
         address: user.address,
-        level: user.level
+        level: user.level,
       }
     });
   } catch (err) {
