@@ -12,5 +12,6 @@ router.use('/sampah', authenticateToken ,require('../api/sampah'));
 router.use('/service', authenticateToken ,require('../api/service'));
 router.use('/layanan', authenticateToken ,require('../api/layanan'));
 router.use('/question', authenticateToken ,require('../api/question'));
+router.use('/answerQuiz', authenticateToken ,require('../api/answerQuiz'));
 
 module.exports = router;
