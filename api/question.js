@@ -3,6 +3,7 @@ const Quiz = require("../modules/Quiz");
 const express = require("express");
 const router = express.Router();
 const cors = require("cors");
+const mongoose = require("mongoose");
 
 router.use(express.json());
 router.use(cors());
@@ -198,22 +199,28 @@ router.post("/update/:id", async (req, res) => {
 // ===========================
 // DELETE QUESTION
 // ===========================
-router.delete("/delete/:id", async (req, res) => {
-  const { id } = req.params;
+// DELETE QUIZ + QUESTIONS
+router.delete("/delete/:quizId", async (req, res) => {
+  const { quizId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(quizId)) {
+    return res.status(400).json({ message: "Quiz ID tidak valid" });
+  }
 
   try {
-    const deleted = await Question.findByIdAndDelete(id);
-
-    if (!deleted) {
-      return res.status(404).json({ message: "Question tidak ditemukan" });
+    const quiz = await Quiz.findByIdAndDelete(quizId);
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz tidak ditemukan" });
     }
 
+    await Question.deleteMany({ quizId });
+
     res.status(200).json({
-      message: "Question berhasil dihapus"
+      message: "Quiz & semua question berhasil dihapus"
     });
   } catch (err) {
-    console.error("DELETE /question error:", err);
-    res.status(500).json({ message: "Gagal menghapus question" });
+    console.error("DELETE quiz error:", err);
+    res.status(500).json({ message: "Gagal menghapus quiz" });
   }
 });
 
